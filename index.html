@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Sight Words" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#FAF7F0" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <title>Sight Word Stars! — Kindergarten Custom Sight Words</title>
+  <meta name="description" content="Kindergarten sight word reading game with custom parent-managed word lists, child name personalization, read-aloud voice button, and letter-by-letter spelling helper." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-shell">
+    <!-- Top Header -->
+    <header class="top-bar">
+      <div class="brand-group">
+        <div class="brand-logo" aria-hidden="true">★</div>
+        <div>
+          <h1 id="brand-title" class="brand-title">Sight Word Stars!</h1>
+          <div id="brand-subtitle" class="brand-subtitle">Kindergarten Edition • Custom Word Lists</div>
+        </div>
+      </div>
+
+      <nav class="header-actions" aria-label="Main navigation">
+        <button type="button" id="btn-play-tab" class="btn-tactile btn-icon active-tab">
+          📖 Read Cards
+        </button>
+        <button type="button" id="btn-manage-tab" class="btn-tactile btn-icon">
+          ✏️ My Words &amp; Name
+        </button>
+        <button type="button" id="btn-chimes" class="btn-tactile btn-icon">
+          🔔 Chimes
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Stage Card -->
+    <main class="stage-card">
+
+      <!-- ================================================================
+           SCREEN 1: KID READING STAGE
+           ================================================================ -->
+      <section id="screen-play" class="screen active" aria-label="Sight Word Flashcards">
+        <div class="play-top-hud">
+          <div class="deck-pill">
+            <span>📚 <strong id="deck-name-label">This Week's Words</strong></span>
+            <span>•</span>
+            <span id="deck-counter-label">1 of 10</span>
+          </div>
+
+          <div id="star-counter-badge" class="star-counter-badge" aria-live="polite">
+            <span>⭐</span>
+            <span id="star-total-val">0</span>
+            <span style="font-size: 0.82rem; font-weight: 600;">Stars</span>
+          </div>
+
+          <div class="stage-controls-mini">
+            <button type="button" id="btn-case-toggle" class="mini-chip" title="Switch lowercase / Title / UPPERCASE">
+              Aa: abc
+            </button>
+            <button type="button" id="btn-shuffle-toggle" class="mini-chip" title="Shuffle words">
+              🔀 Shuffle
+            </button>
+          </div>
+        </div>
+
+        <!-- Clickable Progress Dots -->
+        <div id="progress-dots" class="progress-dots" role="group" aria-label="Word list progress"></div>
+
+        <!-- Empty Deck Notice (if parent cleared all words) -->
+        <div id="empty-deck-box" class="empty-deck-box">
+          <h2 style="font-family: var(--font-display); font-size: 1.5rem;">Your Word List Is Empty!</h2>
+          <p style="color: var(--ink-body);">Add this week's Kindergarten sight words to start reading.</p>
+          <button type="button" id="btn-empty-go-manage" class="btn-tactile btn-primary">
+            ✏️ Add Sight Words Now
+          </button>
+        </div>
+
+        <!-- Active Flashcard & Controls -->
+        <div id="play-stage-wrap" style="display: flex; flex-direction: column; gap: 16px; flex: 1;">
+          <div id="word-stage-card" class="word-stage-card" role="button" tabindex="0" aria-label="Sight word card — tap to hear word">
+            <div id="word-star-ribbon" class="word-star-ribbon">⭐ Starred!</div>
+
+            <div class="mascot-cheer-row">
+              <div id="play-mascot" aria-hidden="true"></div>
+              <div id="cheer-bubble" class="cheer-bubble">Tap 🔊 if you want to hear it!</div>
+            </div>
+
+            <div id="sight-word-text" class="sight-word-text" aria-live="polite">the</div>
+
+            <div id="sentence-helper" class="sentence-helper"></div>
+          </div>
+
+          <!-- Read Out Loud Helpers -->
+          <div class="audio-help-row">
+            <button type="button" id="btn-read-word" class="btn-tactile btn-sky btn-read-main">
+              <span class="speaker-wave">🔊</span>
+              <span>Read It to Me!</span>
+            </button>
+
+            <button type="button" id="btn-spell-word" class="btn-tactile btn-amber">
+              🐢 Spell &amp; Say
+            </button>
+
+            <button type="button" id="btn-sentence-word" class="btn-tactile btn-icon" style="justify-content: center; font-size: 1rem;">
+              💬 In a Sentence
+            </button>
+          </div>
+
+          <!-- Word-to-Word Switching -->
+          <div class="word-nav-row">
+            <button type="button" id="btn-prev-word" class="btn-tactile btn-nav-step">
+              ← Back
+            </button>
+
+            <button type="button" id="btn-got-it" class="btn-tactile btn-primary btn-got-it">
+              ⭐ I Read It! (Next →)
+            </button>
+
+            <button type="button" id="btn-next-word" class="btn-tactile btn-nav-step">
+              Next Word →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SCREEN 2: PARENT WORD LIST & CHILD NAME MANAGER
+           ================================================================ -->
+      <section id="screen-manage" class="screen" aria-label="Manage Sight Words and Child Name">
+        <div class="manager-grid">
+
+          <!-- 1. Child's Name & Voice -->
+          <div class="personalize-card">
+            <div class="field-group">
+              <label for="input-child-name" class="field-label">👧 Child's Name (Personalizes Title &amp; Cheers!)</label>
+              <input
+                type="text"
+                id="input-child-name"
+                class="text-input"
+                placeholder="e.g. Maya"
+                maxlength="32"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="field-group">
+              <label for="select-voice" class="field-label">🗣️ Reading Voice</label>
+              <select id="select-voice" class="text-input"></select>
+            </div>
+          </div>
+
+          <!-- 2. Choose or Create Word Lists -->
+          <div class="lists-bar">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <span class="field-label">📚 Your Saved Word Lists</span>
+              <button type="button" id="btn-new-list" class="mini-chip active">+ New Word List</button>
+            </div>
+
+            <div id="lists-tabs" class="lists-tabs"></div>
+
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px; flex-wrap: wrap;">
+              <input
+                type="text"
+                id="input-list-name"
+                class="text-input"
+                style="max-width: 280px; padding: 8px 12px; font-size: 0.94rem;"
+                placeholder="List Name (e.g. Week 4 Words)"
+                aria-label="Current list name"
+              />
+              <button type="button" id="btn-delete-list" class="mini-chip" style="color: var(--coral-lip);">
+                ✕ Delete List
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Type or Paste Sight Words -->
+          <div class="add-words-box">
+            <div>
+              <label for="input-add-words" class="field-label">➕ Add Sight Words</label>
+              <div class="field-sub">Type a single word or paste a whole list separated by commas, spaces, or new lines!</div>
+            </div>
+            <div class="add-input-row">
+              <input
+                type="text"
+                id="input-add-words"
+                class="text-input"
+                placeholder="e.g. the, see, like, said, come, here"
+                autocomplete="off"
+              />
+              <button type="button" id="btn-add-words" class="btn-tactile btn-primary" style="padding: 11px 22px; font-size: 1.05rem; white-space: nowrap;">
+                + Add Words
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. Current Words Chips (Edit / Test Sound / Delete / Clear) -->
+          <div class="words-editor-box">
+            <div class="words-editor-header">
+              <div>
+                <div id="words-count-heading" class="field-label">Words in List (10)</div>
+                <div class="field-sub">Tap any word to fix spelling • Tap 🔊 to test sound • Tap ✕ to remove</div>
+              </div>
+              <button type="button" id="btn-clear-words" class="mini-chip">
+                🗑️ Clear All Words
+              </button>
+            </div>
+
+            <div id="word-chips-wrap" class="word-chips-wrap"></div>
+          </div>
+
+          <!-- 5. Optional Starter Packs & Share Link to iPad -->
+          <div class="packs-and-share">
+            <div class="sub-panel">
+              <span class="field-label">✨ Optional Kindergarten Starter Packs</span>
+              <span class="field-sub">1-tap add common Kindergarten words:</span>
+              <div id="preset-btns-wrap" class="preset-btns"></div>
+            </div>
+
+            <div class="sub-panel">
+              <span class="field-label">📲 Send This List to Her iPad</span>
+              <span class="field-sub">Creates a link containing her name &amp; custom words:</span>
+              <button type="button" id="btn-share-link" class="btn-tactile btn-amber" style="width: 100%; margin-top: auto;">
+                🔗 Copy Link With My Words
+              </button>
+            </div>
+          </div>
+
+          <button type="button" id="btn-done-manage" class="btn-tactile btn-primary">
+            🚀 Save &amp; Start Reading!
+          </button>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SCREEN 3: END-OF-DECK CELEBRATION
+           ================================================================ -->
+      <section id="screen-celebrate" class="screen" aria-label="Reading Celebration">
+        <div class="celebration-box">
+          <div id="cel-mascot" aria-hidden="true"></div>
+          <div id="cel-badge" class="celebration-badge">🌟 ALL WORDS PRACTICED!</div>
+          <h2 id="cel-title" class="celebration-title">Super Star Reader!</h2>
+          <p id="cel-sub" class="celebration-sub">You practiced every word in your list!</p>
+
+          <div class="celebration-actions">
+            <button type="button" id="btn-cel-replay" class="btn-tactile btn-primary">
+              🔄 Read List Again
+            </button>
+            <button type="button" id="btn-cel-shuffle" class="btn-tactile btn-sky">
+              🔀 Shuffle &amp; Read Again
+            </button>
+            <button type="button" id="btn-cel-edit" class="btn-tactile btn-coral">
+              ✏️ Edit Word List
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer-note">
+      Tip: Tap the word card or press <strong>Space</strong> to hear it read out loud • Swipe or use <strong>← / →</strong> arrows to switch words!
+    </footer>
+  </div>
+
+  <div id="toast-banner" class="toast-banner" role="status" aria-live="polite"></div>
+
+  <script src="sound.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
